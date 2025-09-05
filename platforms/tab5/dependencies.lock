@@ -2,13 +2,13 @@ dependencies:
   chmorgan/esp-audio-player:
     component_hash: c8ac1998e9af863bc41b57e592f88d1a5791a0f891485122336ddabbf7a65033
     dependencies:
-    - name: idf
-      require: private
-      version: '>=5.0'
     - name: chmorgan/esp-libhelix-mp3
       registry_url: https://components.espressif.com
       require: private
       version: '>=1.0.0,<2.0.0'
+    - name: idf
+      require: private
+      version: '>=5.0'
     source:
       registry_url: https://components.espressif.com/
       type: service
@@ -44,21 +44,21 @@ dependencies:
       type: service
     version: 0.5.3
   espressif/eppp_link:
-    component_hash: c2fd9c57ac14a68a62c9d9cdeec39a2b265abc16779196ce2c9f5000c9a4dd8b
+    component_hash: 587abf150563ee0efeeba88e3c7cf46675ab5bd752a788f4b9c88a54649221dd
     dependencies:
-    - name: idf
-      require: private
-      version: '>=5.2'
     - name: espressif/esp_serial_slave_link
       registry_url: https://components.espressif.com
       require: private
       version: ^1.1.0
+    - name: idf
+      require: private
+      version: '>=5.2'
     source:
       registry_url: https://components.espressif.com
       type: service
-    version: 0.2.0
+    version: 1.1.0
   espressif/esp_codec_dev:
-    component_hash: 18c22e1411224ba6103c4aca1b01bc740af33926756e9e106370a477d52bcba1
+    component_hash: 3a1df01ee46d64c55155341bb6f4834db33db7dbd9b637e476e1eab64d01295a
     dependencies:
     - name: idf
       require: private
@@ -66,9 +66,9 @@ dependencies:
     source:
       registry_url: https://components.espressif.com/
       type: service
-    version: 1.3.4
+    version: 1.4.0
   espressif/esp_h264:
-    component_hash: fa5daaebc8a304f0b79bc57e51aab43e0a03eabc2ba3865bff4063c56b5d4564
+    component_hash: 9ef679cf3d64c4ac1523a27fe0c2cbce3b627d3f4c99556442d6712caa5f2b31
     dependencies:
     - name: idf
       require: private
@@ -76,7 +76,10 @@ dependencies:
     source:
       registry_url: https://components.espressif.com/
       type: service
-    version: 1.0.4
+    targets:
+    - esp32s3
+    - esp32p4
+    version: 1.1.3
   espressif/esp_hosted:
     component_hash: ef6bc803451fab3c3f9a679bbc1c48fba0ceeeabc5af4178dd7d2300fafa423e
     dependencies:
@@ -140,7 +143,7 @@ dependencies:
       type: service
     version: 1.1.3
   espressif/esp_serial_slave_link:
-    component_hash: 8c534b7d4986ca0e4c41db71f559492b795ab862f1d15359d7993034696b7bcc
+    component_hash: d8c13c033a7604e9333b5d8ea45e0d6fec908fd552df7db20d33dd8d6916528d
     dependencies:
     - name: idf
       require: private
@@ -148,7 +151,7 @@ dependencies:
     source:
       registry_url: https://components.espressif.com
       type: service
-    version: 1.1.0
+    version: 1.1.0~1
   espressif/esp_wifi_remote:
     component_hash: f772731a8cc7361a3eb416eac94ac46cf85369cb996c5a5fc9245a07f241fee2
     dependencies:
@@ -196,14 +199,14 @@ dependencies:
   idf:
     source:
       type: idf
-    version: 5.4.1
+    version: 6.0.0
   lvgl/lvgl:
-    component_hash: d7c1ac037ae6e85d94897f807d6e7ba0946a83e720074fc95a4f6241da9f9f53
+    component_hash: b702d642e03e95928046d5c6726558e6444e112420c77efa5fdb6650b0a13c5d
     dependencies: []
     source:
       registry_url: https://components.espressif.com/
       type: service
-    version: 8.4.0
+    version: 9.3.0
 direct_dependencies:
 - chmorgan/esp-audio-player
 - chmorgan/esp-file-iterator
