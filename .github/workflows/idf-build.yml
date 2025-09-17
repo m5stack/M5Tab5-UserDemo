@@ -28,6 +28,9 @@ jobs:
             ccache-${{ runner.os }}-${{ github.ref_name }}-
             ccache-${{ runner.os }}-
 
+      - name: Fetch dependencies
+        run: python3 fetch_repos.py
+
       - name: Build with ESP-IDF 5.5.x (esp32p4)
         uses: espressif/esp-idf-ci-action@v1
         with:
