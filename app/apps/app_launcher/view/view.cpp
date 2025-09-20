@@ -43,7 +43,6 @@ void LauncherView::init()
     // Background image
     _img_bg = std::make_unique<Image>(lv_screen_active());
     _img_bg->setAlign(LV_ALIGN_CENTER);
-    _img_bg->setSrc(&launcher_bg);
 
     // Install panels
     _panels.push_back(std::make_unique<PanelRtc>());
