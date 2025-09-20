@@ -6,7 +6,6 @@
 #pragma once
 #include <lvgl.h>
 
-LV_IMG_DECLARE(launcher_bg);
 LV_IMG_DECLARE(sw_chg_off);
 LV_IMG_DECLARE(sw_chg_on);
 LV_IMG_DECLARE(sw_off);
