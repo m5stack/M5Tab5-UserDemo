@@ -6,6 +6,10 @@
 #pragma once
 #include <lvgl.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 LV_IMG_DECLARE(launcher_bg);
 LV_IMG_DECLARE(sw_chg_off);
 LV_IMG_DECLARE(sw_chg_on);
@@ -24,3 +28,7 @@ LV_IMG_DECLARE(logo_tab);
 LV_IMG_DECLARE(logo_5);
 LV_IMG_DECLARE(chg_arrow_down);
 LV_IMG_DECLARE(chg_arrow_up);
+
+#ifdef __cplusplus
+}
+#endif

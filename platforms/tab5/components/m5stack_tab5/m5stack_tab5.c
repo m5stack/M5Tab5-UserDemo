@@ -797,21 +797,21 @@ esp_codec_dev_handle_t bsp_audio_codec_speaker_init(void)
     }
     assert(i2s_data_if);
 
-    const audio_codec_gpio_if_t* gpio_if = audio_codec_new_gpio();
+    // const audio_codec_gpio_if_t* gpio_if = audio_codec_new_gpio();  // Not used in current implementation
 
     i2c_master_bus_handle_t i2c_bus_handle = bsp_i2c_get_handle();
     audio_codec_i2c_cfg_t i2c_cfg          = {
-                 .port       = BSP_I2C_NUM,
+                 // .port       = BSP_I2C_NUM,  // Commented out to avoid legacy I2C driver conflict
                  .addr       = ES8388_CODEC_DEFAULT_ADDR,
                  .bus_handle = i2c_bus_handle,
     };
     const audio_codec_ctrl_if_t* i2c_ctrl_if = audio_codec_new_i2c_ctrl(&i2c_cfg);
     BSP_NULL_CHECK(i2c_ctrl_if, NULL);
 
-    esp_codec_dev_hw_gain_t gain = {
-        .pa_voltage        = 5.0,
-        .codec_dac_voltage = 3.3,
-    };
+    // esp_codec_dev_hw_gain_t gain = {  // Not used in current implementation
+    //     .pa_voltage        = 5.0,
+    //     .codec_dac_voltage = 3.3,
+    // };
 
     es8388_codec_cfg_t es8388_cfg = {
         .codec_mode  = ESP_CODEC_DEV_WORK_MODE_DAC,
@@ -846,7 +846,7 @@ esp_codec_dev_handle_t bsp_audio_codec_microphone_init(void)
 
     i2c_master_bus_handle_t i2c_bus_handle = bsp_i2c_get_handle();
     audio_codec_i2c_cfg_t i2c_cfg          = {
-                 .port       = BSP_I2C_NUM,
+                 // .port       = BSP_I2C_NUM,  // Commented out to avoid legacy I2C driver conflict
                  .addr       = ES7210_CODEC_DEFAULT_ADDR,
                  .bus_handle = i2c_bus_handle,
     };
@@ -856,7 +856,7 @@ esp_codec_dev_handle_t bsp_audio_codec_microphone_init(void)
     es7210_codec_cfg_t es7210_cfg = {
         .ctrl_if = i2c_ctrl_if,  // Codec Control interface
     };
-    es7210_cfg.mic_selected            = ES7120_SEL_MIC1 | ES7120_SEL_MIC2 | ES7120_SEL_MIC3 | ES7120_SEL_MIC4;
+    es7210_cfg.mic_selected            = ES7210_SEL_MIC1 | ES7210_SEL_MIC2 | ES7210_SEL_MIC3 | ES7210_SEL_MIC4;
     const audio_codec_if_t* es7210_dev = es7210_codec_new(&es7210_cfg);
     BSP_NULL_CHECK(es7210_dev, NULL);
 

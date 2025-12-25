@@ -55,6 +55,12 @@ void LauncherView::init()
     for (auto& panel : _panels) {
         panel->init();
     }
+
+#if defined(PLATFORM_BUILD_DESKTOP)
+    // Force refresh after content creation (desktop only)
+    // On ESP32, rendering is handled by dedicated render task
+    lv_refr_now(lv_display_get_default());
+#endif
 }
 
 void LauncherView::update()
