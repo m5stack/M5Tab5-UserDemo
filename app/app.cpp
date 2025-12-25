@@ -48,7 +48,7 @@ void app::Update()
             // Handle window close event if needed
         }
     }
-    
+
 #if defined(_WIN32) || defined(WIN32)
     // Windows-specific: Add small delay to prevent high CPU usage
     // LVGL timer handler runs in separate thread on Windows

@@ -31,7 +31,7 @@ void HalDesktop::lvgl_init()
     }
     lv_display_set_default(display);
     mclog::tagInfo(_tag, "SDL window created: {}x{}", HAL_SCREEN_WIDTH, HAL_SCREEN_HEIGHT);
-    
+
     // Force initial refresh to ensure window is visible
     lv_refr_now(display);
 
