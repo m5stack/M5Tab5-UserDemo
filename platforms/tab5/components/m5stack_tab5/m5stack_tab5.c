@@ -723,6 +723,11 @@ esp_err_t bsp_audio_init(const i2s_std_config_t* i2s_config)
     /* Setup I2S peripheral */
     i2s_chan_config_t chan_cfg = I2S_CHANNEL_DEFAULT_CONFIG(CONFIG_BSP_I2S_NUM, I2S_ROLE_MASTER);
     chan_cfg.auto_clear        = true;  // Auto clear the legacy data in the DMA buffer
+    /* Bump DMA buffers: audio_input reads 960 frames (1920 bytes mono 16-bit) per call.
+     * Default 256*3 = 1536 bytes is too small and can heap-corrupt on overrun.
+     * 480 frames/desc * 6 descs * 2 bytes = 5760 bytes total — plenty of headroom. */
+    chan_cfg.dma_desc_num      = 6;
+    chan_cfg.dma_frame_num     = 256;  // ★ fix(heap-corrupt): 直接设 256 对齐 ESP-IDF DMA buffer 64 字节对齐要求，避免 auto-adjust 警告
     ESP_ERROR_CHECK(i2s_new_channel(&chan_cfg, &i2s_tx_chan, &i2s_rx_chan));
 
     /* Setup I2S channels */
@@ -753,10 +758,10 @@ esp_err_t bsp_audio_init(const i2s_std_config_t* i2s_config)
                 .bclk_div        = 8,
             },
         .slot_cfg = {.data_bit_width = I2S_DATA_BIT_WIDTH_16BIT,
-                     .slot_bit_width = I2S_SLOT_BIT_WIDTH_AUTO,
+                     .slot_bit_width = I2S_SLOT_BIT_WIDTH_32BIT,  // ★ fix(heap-corrupt): 匹配 ES7210 TDM 4mic 实际输出 32bit/slot，避免 DMA 越界写
                      .slot_mode      = I2S_SLOT_MODE_STEREO,
                      .slot_mask      = (I2S_TDM_SLOT0 | I2S_TDM_SLOT1 | I2S_TDM_SLOT2 | I2S_TDM_SLOT3),
-                     .ws_width       = I2S_TDM_AUTO_WS_WIDTH,
+                     .ws_width       = 16,                         // ★ fix(heap-corrupt): 显式设 16 替代 AUTO，消除版本歧义
                      .ws_pol         = false,
                      .bit_shift      = true,
                      .left_align     = false,
@@ -856,7 +861,7 @@ esp_codec_dev_handle_t bsp_audio_codec_microphone_init(void)
     es7210_codec_cfg_t es7210_cfg = {
         .ctrl_if = i2c_ctrl_if,  // Codec Control interface
     };
-    es7210_cfg.mic_selected            = ES7120_SEL_MIC1 | ES7120_SEL_MIC2 | ES7120_SEL_MIC3 | ES7120_SEL_MIC4;
+    es7210_cfg.mic_selected            = ES7210_SEL_MIC1 | ES7210_SEL_MIC2 | ES7210_SEL_MIC3 | ES7210_SEL_MIC4;
     const audio_codec_if_t* es7210_dev = es7210_codec_new(&es7210_cfg);
     BSP_NULL_CHECK(es7210_dev, NULL);
 
