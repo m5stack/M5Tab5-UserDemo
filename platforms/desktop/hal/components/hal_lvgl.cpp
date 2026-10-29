@@ -25,7 +25,15 @@ void HalDesktop::lvgl_init()
     lv_group_set_default(lv_group_create());
 
     auto display = lv_sdl_window_create(HAL_SCREEN_WIDTH, HAL_SCREEN_HEIGHT);
+    if (display == nullptr) {
+        mclog::tagError(_tag, "Failed to create SDL window!");
+        return;
+    }
     lv_display_set_default(display);
+    mclog::tagInfo(_tag, "SDL window created: {}x{}", HAL_SCREEN_WIDTH, HAL_SCREEN_HEIGHT);
+
+    // Force initial refresh to ensure window is visible
+    lv_refr_now(display);
 
     lvTouchpad = lv_sdl_mouse_create();
     lv_indev_set_group(lvTouchpad, lv_group_get_default());
@@ -54,6 +62,15 @@ void HalDesktop::lvgl_init()
             GetHAL()->lvglLock();
             auto time_till_next = lv_timer_handler();
             GetHAL()->lvglUnlock();
+#if defined(_WIN32) || defined(WIN32)
+            // Windows-specific: Ensure minimum sleep time and handle LV_NO_TIMER_READY
+            if (time_till_next == LV_NO_TIMER_READY) {
+                time_till_next = 10;  // Default to 10ms if no timer ready
+            }
+            if (time_till_next < 1) {
+                time_till_next = 1;  // Minimum 1ms
+            }
+#endif
             std::this_thread::sleep_for(std::chrono::milliseconds(time_till_next));
         }
     }).detach();

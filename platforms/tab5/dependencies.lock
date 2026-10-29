@@ -44,7 +44,7 @@ dependencies:
       type: service
     version: 0.5.3
   espressif/eppp_link:
-    component_hash: 587abf150563ee0efeeba88e3c7cf46675ab5bd752a788f4b9c88a54649221dd
+    component_hash: 41f6519edda527ec6a0553c872ebaf8fc6d3812523c9d4c8d1660ad21c720abe
     dependencies:
     - name: espressif/esp_serial_slave_link
       registry_url: https://components.espressif.com
@@ -56,9 +56,9 @@ dependencies:
     source:
       registry_url: https://components.espressif.com
       type: service
-    version: 1.1.0
+    version: 1.1.3
   espressif/esp_codec_dev:
-    component_hash: 18c22e1411224ba6103c4aca1b01bc740af33926756e9e106370a477d52bcba1
+    component_hash: 383e46ad732c80a475337ad566d70c896c841ca5945d5c077962cb92f948d386
     dependencies:
     - name: idf
       require: private
@@ -66,9 +66,9 @@ dependencies:
     source:
       registry_url: https://components.espressif.com/
       type: service
-    version: 1.3.4
+    version: 1.5.2
   espressif/esp_h264:
-    component_hash: fa5daaebc8a304f0b79bc57e51aab43e0a03eabc2ba3865bff4063c56b5d4564
+    component_hash: 7f3b4a3b3fb8b89a644983ed6b6a52e70c528244902043d113fbcf98e7b7d7b5
     dependencies:
     - name: idf
       require: private
@@ -76,7 +76,10 @@ dependencies:
     source:
       registry_url: https://components.espressif.com/
       type: service
-    version: 1.0.4
+    targets:
+    - esp32s3
+    - esp32p4
+    version: 1.1.4
   espressif/esp_hosted:
     component_hash: ef6bc803451fab3c3f9a679bbc1c48fba0ceeeabc5af4178dd7d2300fafa423e
     dependencies:
@@ -88,7 +91,7 @@ dependencies:
       type: service
     version: 1.4.0
   espressif/esp_lcd_ili9881c:
-    component_hash: f4f374226b62baf13f735864e8fae58e17c537df34d598e059f6caad4761ef65
+    component_hash: eb9ba0484d1d14171b69e5d192716fb1cdd6ef068aa4014dc3202486e124498e
     dependencies:
     - name: idf
       require: private
@@ -98,23 +101,23 @@ dependencies:
       type: service
     targets:
     - esp32p4
-    version: 1.0.1
+    version: 1.0.2
   espressif/esp_lcd_st7703:
-    component_hash: fdc6a37259eeb69bf02c2dcb44eeb689b1b4d3a8124d4c7eb15d9817067989af
+    component_hash: c0453f7558215700729c1d6540915ba49ec2c4daffb895fae84c534da5c74672
     dependencies:
+    - name: idf
+      require: private
+      version: '>=5.3'
     - name: espressif/cmake_utilities
       registry_url: https://components.espressif.com
       require: private
       version: 0.*
-    - name: idf
-      require: private
-      version: '>=5.3'
     source:
       registry_url: https://components.espressif.com/
       type: service
     targets:
     - esp32p4
-    version: 1.0.3
+    version: 1.0.5
   espressif/esp_lcd_touch:
     component_hash: 779b4ba2464a3ae85681e4b860caa5fdc35801458c23f3039ee761bae7f442a4
     dependencies:
@@ -158,7 +161,7 @@ dependencies:
       type: service
     version: 1.0.0
   espressif/esp_serial_slave_link:
-    component_hash: d8c13c033a7604e9333b5d8ea45e0d6fec908fd552df7db20d33dd8d6916528d
+    component_hash: ac1776806de0a6e371c84e87898bb983e19ce62aa7f1e2e5c4a3b0234a575d2c
     dependencies:
     - name: idf
       require: private
@@ -166,7 +169,7 @@ dependencies:
     source:
       registry_url: https://components.espressif.com
       type: service
-    version: 1.1.0~1
+    version: 1.1.2
   espressif/esp_wifi_remote:
     component_hash: f772731a8cc7361a3eb416eac94ac46cf85369cb996c5a5fc9245a07f241fee2
     dependencies:
@@ -198,11 +201,18 @@ dependencies:
       type: service
     version: 3.0.0
   espressif/usb_host_hid:
-    component_hash: eabf03fe3cb1bdb5325d2725f420c6324c3e150033d893ce3737222929455a55
+    component_hash: 824d49e67771af546c29d916bd8d7d3526cd2ff5e082d9021cab66d5f9c2b9bc
     dependencies:
     - name: idf
       require: private
       version: '>=4.4'
+    - name: espressif/usb
+      registry_url: https://components.espressif.com
+      require: public
+      rules:
+      - if: idf_version >=6.0
+      - if: target not in ["linux"]
+      version: ^1.0.0
     source:
       registry_url: https://components.espressif.com/
       type: service
@@ -210,18 +220,20 @@ dependencies:
     - esp32s2
     - esp32s3
     - esp32p4
-    version: 1.0.3
+    - esp32h4
+    - linux
+    version: 1.0.4
   idf:
     source:
       type: idf
     version: 5.4.2
   lvgl/lvgl:
-    component_hash: d7c1ac037ae6e85d94897f807d6e7ba0946a83e720074fc95a4f6241da9f9f53
+    component_hash: 17e68bfd21f0edf4c3ee838e2273da840bf3930e5dbc3bfa6c1190c3aed41f9f
     dependencies: []
     source:
       registry_url: https://components.espressif.com/
       type: service
-    version: 8.4.0
+    version: 9.4.0
 direct_dependencies:
 - chmorgan/esp-audio-player
 - chmorgan/esp-file-iterator
@@ -238,6 +250,6 @@ direct_dependencies:
 - espressif/usb_host_hid
 - idf
 - lvgl/lvgl
-manifest_hash: e057e8886cf9f2347aa190584b841da208b81ce73a0b80bf5d12a7a22e4c9d58
+manifest_hash: a29496975414d07a7bb63fea91240ce7418d3261ea4f9f0b06ac62867943e5af
 target: esp32p4
 version: 2.0.0

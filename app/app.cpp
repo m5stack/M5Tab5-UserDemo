@@ -11,6 +11,10 @@
 #include <string>
 #include <thread>
 
+#if defined(PLATFORM_BUILD_DESKTOP)
+#include <SDL2/SDL.h>
+#endif
+
 using namespace mooncake;
 
 static const std::string _tag = "app";
@@ -33,6 +37,24 @@ void app::Init(InitCallback_t callback)
 void app::Update()
 {
     GetMooncake().update();
+
+#if defined(PLATFORM_BUILD_DESKTOP)
+    // Handle SDL events on desktop platform
+    SDL_Event event;
+    while (SDL_PollEvent(&event)) {
+        // SDL events are handled by LVGL SDL driver automatically
+        // We just need to poll them
+        if (event.type == SDL_QUIT) {
+            // Handle window close event if needed
+        }
+    }
+
+#if defined(_WIN32) || defined(WIN32)
+    // Windows-specific: Add small delay to prevent high CPU usage
+    // LVGL timer handler runs in separate thread on Windows
+    SDL_Delay(5);
+#endif
+#endif
 
 #if defined(__APPLE__) && defined(__MACH__)
     // 'nextEventMatchingMask should only be called from the Main Thread!'
