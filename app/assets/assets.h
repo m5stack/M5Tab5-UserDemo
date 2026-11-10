@@ -24,3 +24,4 @@ LV_IMG_DECLARE(logo_tab);
 LV_IMG_DECLARE(logo_5);
 LV_IMG_DECLARE(chg_arrow_down);
 LV_IMG_DECLARE(chg_arrow_up);
+LV_IMG_DECLARE(material_keyboard_filled);

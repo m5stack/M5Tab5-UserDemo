@@ -51,6 +51,7 @@ void LauncherView::init()
     _panels.push_back(std::make_unique<PanelGpioTest>());
     _panels.push_back(std::make_unique<PanelMusic>());
     _panels.push_back(std::make_unique<PanelComMonitor>());
+    _panels.push_back(std::make_unique<PanelKeyboard>());
 
     for (auto& panel : _panels) {
         panel->init();

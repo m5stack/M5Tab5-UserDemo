@@ -8,6 +8,7 @@
 #include <memory>
 #include <lvgl.h>
 #include <apps/utils/ui/window.h>
+#include <apps/utils/ui/toast.h>
 #include <smooth_ui_toolkit.h>
 #include <smooth_lvgl.h>
 #include <vector>
@@ -288,6 +289,20 @@ private:
  * @brief
  *
  */
+class PanelKeyboard : public PanelBase {
+public:
+    void init() override;
+    void update(bool isStacked) override;
+
+private:
+    std::unique_ptr<ui::Toast> _notification;
+    std::unique_ptr<ui::Window> _window;
+    uint32_t _last_probe = 0;
+    bool _home_active    = false;
+    bool _notified       = false;
+    bool _open_requested = false;
+};
+
 class LauncherView {
 public:
     void init();

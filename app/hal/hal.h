@@ -11,6 +11,7 @@
 #include <lvgl.h>
 #include <mutex>
 #include <vector>
+#include "keyboard.h"
 
 /**
  * @brief Hardware abstraction layer
@@ -309,6 +310,30 @@ public:
     }
     virtual void gpioReset(uint8_t pin)
     {
+    }
+
+    /* ------------------------------ Tab5 Keyboard ----------------------------- */
+    virtual bool probeKeyboard()
+    {
+        return false;
+    }
+    virtual void startKeyboardTest()
+    {
+    }
+    virtual void stopKeyboardTest()
+    {
+    }
+    virtual KeyboardStatus updateKeyboardTest(std::vector<KeyboardEvent>& events)
+    {
+        return {};
+    }
+    virtual bool setKeyboardTestMode(KeyboardMode mode)
+    {
+        return false;
+    }
+    virtual bool setKeyboardTestLeds(uint32_t left, uint32_t right, uint8_t brightness)
+    {
+        return false;
     }
 
     /* ------------------------------ UART monitor ------------------------------ */
