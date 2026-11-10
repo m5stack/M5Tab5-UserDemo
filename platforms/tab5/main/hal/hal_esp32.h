@@ -89,6 +89,13 @@ public:
     void gpioSetLevel(uint8_t pin, bool level) override;
     void gpioReset(uint8_t pin) override;
 
+    bool probeKeyboard() override;
+    void startKeyboardTest() override;
+    void stopKeyboardTest() override;
+    hal::KeyboardStatus updateKeyboardTest(std::vector<hal::KeyboardEvent>& events) override;
+    bool setKeyboardTestMode(hal::KeyboardMode mode) override;
+    bool setKeyboardTestLeds(uint32_t left, uint32_t right, uint8_t brightness) override;
+
 private:
     void set_gpio_output_capability();
     void hid_init();

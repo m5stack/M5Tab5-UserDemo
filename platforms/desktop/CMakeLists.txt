@@ -30,7 +30,7 @@ set(APP_LAYER_INCS
 
 # Lvgl
 set(LV_CONF_INCLUDE_SIMPLE OFF)
-set(LV_CONF_PATH ../../lv_conf.h)
+set(LV_CONF_PATH "${CMAKE_SOURCE_DIR}/lv_conf.h")
 add_subdirectory(dependencies/lvgl)
 
 # SDL

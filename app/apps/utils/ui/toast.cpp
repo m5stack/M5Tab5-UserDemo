@@ -10,6 +10,7 @@
 #include <memory>
 #include <stdint.h>
 #include <queue>
+#include <algorithm>
 
 using namespace ui;
 using namespace smooth_ui_toolkit;
@@ -32,11 +33,6 @@ static ToastColor_t _toast_color_orange  = {0xFFDCD1, 0xFFBFAA, 0xF84C13};
 static ToastColor_t _toast_color_gray    = {0xFFFFFF, 0xD9D9D9, 0x11181C};
 static ToastColor_t _toast_color_rose    = {0xFFE9F4, 0xFFBFDF, 0xFF339A};
 static ToastColor_t _toast_color_dark    = {0x383838, 0x222222, 0xF4F3F3};
-
-static Toast::KeyFrame_t _toast_kf_closed = {-100, 320};
-static Toast::KeyFrame_t _toast_kf_opened = {16, 640};
-static int16_t _toast_x                   = -276;
-static int16_t _toast_h                   = 80;
 
 static ToastColor_t get_toast_color(toast_type::Type_t type)
 {
@@ -63,33 +59,77 @@ static ToastColor_t get_toast_color(toast_type::Type_t type)
     return _toast_color_dark;
 }
 
+static bool is_bottom_aligned(lv_align_t align)
+{
+    return align == LV_ALIGN_BOTTOM_LEFT || align == LV_ALIGN_BOTTOM_MID || align == LV_ALIGN_BOTTOM_RIGHT;
+}
+
 void Toast::init(lv_obj_t* parent)
 {
     auto toast_color = get_toast_color(config.type);
 
     _toast = std::make_unique<Container>(parent);
-    _toast->setBorderWidth(1);
-    _toast->setBorderColor(lv_color_hex(toast_color.border));
+    _toast->setBorderWidth(config.borderWidth);
+    _toast->setBorderColor(lv_color_hex(config.borderColor.value_or(toast_color.border)));
     _toast->setBgColor(lv_color_hex(toast_color.bg));
     _toast->setRadius(24);
-    _toast->setAlign(LV_ALIGN_TOP_MID);
+    _toast->setAlign(config.align);
     _toast->removeFlag(LV_OBJ_FLAG_SCROLLABLE);
-    _toast->onClick().connect([&]() { close(); });
+    _toast->onClick().connect([this]() {
+        close();
+        if (config.onClick) {
+            config.onClick();
+        }
+    });
 
     _msg_label = std::make_unique<Label>(_toast->get());
-    _msg_label->setTextFont(&lv_font_montserrat_24);
+    _msg_label->setTextFont(config.font);
     _msg_label->setText(config.msg);
     _msg_label->setTextColor(lv_color_hex(toast_color.msg));
-    _msg_label->align(LV_ALIGN_CENTER, 0, 0);
-    if (_msg_label->getWidth() > 580) {
-        _msg_label->setWidth(580);
+    bool rich_content = config.icon || !config.detail.empty();
+    int16_t text_x    = config.icon ? 58 : 16;
+    if (rich_content) {
+        _toast->setPadding(0, 0, 0, 0);
+        _msg_label->align(LV_ALIGN_LEFT_MID, text_x, config.detail.empty() ? 0 : -11);
+    } else {
+        _msg_label->align(LV_ALIGN_CENTER, 0, 0);
+    }
+    auto max_width = std::min<int16_t>(580, config.width - (rich_content ? text_x + 12 : 32));
+    if (_msg_label->getWidth() > max_width) {
+        _msg_label->setWidth(max_width);
         _msg_label->setLongMode(LV_LABEL_LONG_SCROLL_CIRCULAR);
     }
+    if (config.icon) {
+        _icon = std::make_unique<Image>(_toast->get());
+        _icon->setSrc(config.icon);
+        _icon->align(LV_ALIGN_LEFT_MID, 14, 0);
+        _icon->removeFlag(LV_OBJ_FLAG_CLICKABLE);
+        lv_obj_set_style_image_recolor(_icon->get(), lv_color_hex(config.iconColor), 0);
+        lv_obj_set_style_image_recolor_opa(_icon->get(), LV_OPA_COVER, 0);
+    }
+    if (!config.detail.empty()) {
+        _detail_label = std::make_unique<Label>(_toast->get());
+        _detail_label->setTextFont(&lv_font_montserrat_14);
+        _detail_label->setTextColor(lv_color_hex(0xB8B8B8));
+        _detail_label->setText(config.detail);
+        _detail_label->setWidth(max_width);
+        _detail_label->setLongMode(LV_LABEL_LONG_DOT);
+        _detail_label->align(LV_ALIGN_LEFT_MID, text_x, 12);
+    }
 
-    _anim_y.springOptions().visualDuration = 0.4;
-    _anim_y.springOptions().bounce         = 0.3;
-    _anim_w.springOptions().visualDuration = 0.4;
-    _anim_w.springOptions().bounce         = 0.3;
+    if (is_bottom_aligned(config.align)) {
+        // A fixed-width slide keeps the icon/text still and stays inside the
+        // reserved space without abruptly clipping a spring's overshoot.
+        _anim_y.easingOptions().duration             = 0.36f;
+        _anim_y.easingOptions().easingFunction       = ease::ease_out_cubic;
+        _anim_opacity.easingOptions().duration       = 0.36f;
+        _anim_opacity.easingOptions().easingFunction = ease::ease_out_cubic;
+    } else {
+        _anim_y.springOptions().visualDuration = 0.4;
+        _anim_y.springOptions().bounce         = 0.3;
+        _anim_w.springOptions().visualDuration = 0.4;
+        _anim_w.springOptions().bounce         = 0.3;
+    }
 
     close(true);
 }
@@ -98,14 +138,17 @@ void Toast::update()
 {
     // Apply animation
     if (!_anim_y.done()) {
-        _toast->setPos(_toast_x, _anim_y);
+        _toast->setPos(config.x, _anim_y);
     }
     if (!_anim_w.done()) {
-        _toast->setSize(_anim_w, _toast_h);
+        _toast->setSize(_anim_w, config.height);
+    }
+    if (is_bottom_aligned(config.align) && !_anim_opacity.done()) {
+        lv_obj_set_style_opa(_toast->get(), static_cast<lv_opa_t>(static_cast<float>(_anim_opacity)), 0);
     }
 
     // Update state
-    if (_anim_y.done() && _anim_w.done()) {
+    if (_anim_y.done() && _anim_w.done() && (!is_bottom_aligned(config.align) || _anim_opacity.done())) {
         if (_state == Opening) {
             _state      = Opened;
             _time_count = GetHAL()->millis();
@@ -114,7 +157,7 @@ void Toast::update()
         }
     }
 
-    if (_state == Opened) {
+    if (_state == Opened && config.durationMs != 0) {
         if (GetHAL()->millis() - _time_count > config.durationMs) {
             close();
         }
@@ -124,13 +167,19 @@ void Toast::update()
 void Toast::close(bool teleport)
 {
     _state = Closing;
-    update_anim(_toast_kf_closed, teleport);
+    _toast->removeFlag(LV_OBJ_FLAG_CLICKABLE);
+    // Bottom notifications enter from below; regular notifications keep their
+    // existing top-edge animation and dimensions.
+    int16_t y     = is_bottom_aligned(config.align) ? config.height + 20 : -config.height - 20;
+    int16_t width = is_bottom_aligned(config.align) ? config.width : config.width / 2;
+    update_anim({y, width}, teleport);
 }
 
 void Toast::open(bool teleport)
 {
     _state = Opening;
-    update_anim(_toast_kf_opened, teleport);
+    _toast->addFlag(LV_OBJ_FLAG_CLICKABLE);
+    update_anim({config.y, config.width}, teleport);
 }
 
 void Toast::stack(bool teleport)
@@ -141,7 +190,7 @@ void Toast::stack(bool teleport)
 
     _stack_depth++;
 
-    auto kf_stack = _toast_kf_opened;
+    KeyFrame_t kf_stack{config.y, config.width};
     kf_stack.y += _stack_depth * (12 - _stack_depth * 2);
     kf_stack.w -= _stack_depth * 20 * 2;
 
@@ -150,12 +199,21 @@ void Toast::stack(bool teleport)
 
 void Toast::update_anim(const KeyFrame_t& target, bool teleport)
 {
+    if (is_bottom_aligned(config.align)) {
+        auto opacity = _state == Closing ? LV_OPA_TRANSP : LV_OPA_COVER;
+        if (teleport) {
+            _anim_opacity.teleport(opacity);
+            lv_obj_set_style_opa(_toast->get(), opacity, 0);
+        } else {
+            _anim_opacity = opacity;
+        }
+    }
     if (teleport) {
         _anim_y.teleport(target.y);
         _anim_w.teleport(target.w);
 
-        _toast->setPos(_toast_x, _anim_y);
-        _toast->setSize(_anim_w, _toast_h);
+        _toast->setPos(config.x, _anim_y);
+        _toast->setSize(_anim_w, config.height);
     } else {
         _anim_y = target.y;
         _anim_w = target.w;
