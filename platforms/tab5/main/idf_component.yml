@@ -1,10 +1,21 @@
 ## IDF Component Manager Manifest File
 dependencies:
   ## Required IDF version
-  idf: '>=5.3'
-  espressif/esp_hosted: 1.4.0
-  espressif/esp_wifi_remote: 0.8.5
-  chmorgan/esp-audio-player: 1.0.7
+  idf: '>=5.5'
+  # IDF >= 6.0 moved the USB Host stack out of the IDF tree into this component.
+  espressif/usb: ^1.6.0
+  # esp_hosted >= 3.0 is required on IDF 6.1: 2.x private-links the source-less
+  # esp_wifi_remote shim, which is a fatal configure error against the in-tree
+  # components/esp_wifi/remote. 3.x also ships an M5Stack Tab5 board preset.
+  espressif/esp_hosted: 3.1.0
+  # 1.0.7 only declares `REQUIRES driver`, which no longer re-exports the i2s
+  # headers on IDF 6 (driver was hollowed out into esp_hal_*/esp_driver_*), so
+  # audio_player.h's `#include "driver/i2s_std.h"` fails to resolve. 1.1.0
+  # requires esp_driver_i2s esp_ringbuf explicitly. Public API is unchanged.
+  chmorgan/esp-audio-player: 1.1.0
   chmorgan/esp-file-iterator: 1.0.0
-  espressif/led_strip: 3.0.0
+  # 3.1.1 adds the missing esp_heap_caps.h include in led_strip_spi_dev.c; with
+  # 3.0.0 the SPI backend fails to build on IDF 6, which no longer leaks that
+  # header in through other public includes.
+  espressif/led_strip: 3.1.1
   espressif/esp_lcd_ili9881c: ^1.0.1

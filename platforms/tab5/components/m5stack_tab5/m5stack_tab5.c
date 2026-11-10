@@ -570,7 +570,7 @@ void bsp_reset_tp()
 
 static sdmmc_card_t* card;
 
-esp_err_t bsp_sdcard_init(char* mount_point, size_t max_files)
+esp_err_t bsp_sdcard_init(const char* mount_point, size_t max_files)
 {
     esp_err_t ret_val = ESP_OK;
 
@@ -650,7 +650,7 @@ esp_err_t bsp_sdcard_init(char* mount_point, size_t max_files)
     return ret_val;
 }
 
-esp_err_t bsp_sdcard_deinit(char* mount_point)
+esp_err_t bsp_sdcard_deinit(const char* mount_point)
 {
     if (mount_point == NULL) {
         return ESP_ERR_INVALID_STATE;
@@ -881,7 +881,9 @@ esp_codec_dev_handle_t bsp_audio_codec_microphone_init(void)
     es7210_codec_cfg_t es7210_cfg = {
         .ctrl_if = i2c_ctrl_if,  // Codec Control interface
     };
-    es7210_cfg.mic_selected            = ES7120_SEL_MIC1 | ES7120_SEL_MIC2 | ES7120_SEL_MIC3 | ES7120_SEL_MIC4;
+    // esp_codec_dev 1.3.x spelled these ES7120_SEL_MIC*; the typo was fixed to
+    // ES7210_SEL_MIC* and the old names are gone from 1.4 onward.
+    es7210_cfg.mic_selected            = ES7210_SEL_MIC1 | ES7210_SEL_MIC2 | ES7210_SEL_MIC3 | ES7210_SEL_MIC4;
     const audio_codec_if_t* es7210_dev = es7210_codec_new(&es7210_cfg);
     BSP_NULL_CHECK(es7210_dev, NULL);
 
@@ -1223,7 +1225,13 @@ esp_err_t bsp_display_new_with_handles(const bsp_display_config_t* config, bsp_l
         .virtual_channel    = 0,
         .dpi_clk_src        = MIPI_DSI_DPI_CLK_SRC_DEFAULT,
         .dpi_clock_freq_mhz = 60,  // 720*1280 RGB24 60Hz RGB24 // 80,
-        .pixel_format       = LCD_COLOR_PIXEL_FORMAT_RGB565,
+        // IDF 6 removed esp_lcd_dpi_panel_config_t.pixel_format; the pixel format
+        // is now a FourCC lcd_color_format_t. in_color_format describes what the
+        // frame buffer holds and out_color_format what the panel accepts. The
+        // driver defaults out to in, so naming both RGB565 keeps the previous
+        // behaviour explicit.
+        .in_color_format    = LCD_COLOR_FMT_RGB565,
+        .out_color_format   = LCD_COLOR_FMT_RGB565,
         .num_fbs            = 1,
         .video_timing =
             {
@@ -1236,7 +1244,8 @@ esp_err_t bsp_display_new_with_handles(const bsp_display_config_t* config, bsp_l
                 .vsync_pulse_width = 4,
                 .vsync_front_porch = 20,
             },
-        .flags.use_dma2d = true,
+        // .flags.use_dma2d was removed in IDF 6; DMA2D is now opt-in per panel
+        // via esp_lcd_dpi_panel_enable_dma2d() right after panel creation.
     };
 
     ili9881c_vendor_config_t vendor_config = {
@@ -1262,6 +1271,9 @@ esp_err_t bsp_display_new_with_handles(const bsp_display_config_t* config, bsp_l
     ESP_ERROR_CHECK(esp_lcd_panel_init(disp_panel));
     //  ESP_ERROR_CHECK(esp_lcd_panel_mirror(disp_panel, false, true));
     ESP_ERROR_CHECK(esp_lcd_panel_disp_on_off(disp_panel, true));
+    // Equivalent of the old `.flags.use_dma2d = true`: registers the built-in
+    // DMA2D draw-bitmap hook so the CPU is not asked to copy pixels itself.
+    ESP_ERROR_CHECK(esp_lcd_dpi_panel_enable_dma2d(disp_panel));
 
     /* Return all handles */
     ret_handles->io           = io;
@@ -1404,7 +1416,10 @@ esp_err_t bsp_display_new_with_handles_to_st7123(const bsp_display_config_t* con
         .virtual_channel    = 0,
         .dpi_clk_src        = MIPI_DSI_DPI_CLK_SRC_DEFAULT,
         .dpi_clock_freq_mhz = 70,  // DPI clock frequency
-        .pixel_format       = LCD_COLOR_PIXEL_FORMAT_RGB565,
+        // IDF 6 removed esp_lcd_dpi_panel_config_t.pixel_format; see the
+        // ili9881c path above for the in/out color format rationale.
+        .in_color_format    = LCD_COLOR_FMT_RGB565,
+        .out_color_format   = LCD_COLOR_FMT_RGB565,
         .num_fbs            = 1,
         .video_timing =
             {
@@ -1417,10 +1432,8 @@ esp_err_t bsp_display_new_with_handles_to_st7123(const bsp_display_config_t* con
                 .vsync_back_porch  = is_st7121 ? 24 : 8,
                 .vsync_front_porch = is_st7121 ? 200 : 220,
             },
-        .flags =
-            {
-                .use_dma2d = true,
-            },
+        // .flags.use_dma2d was removed in IDF 6; DMA2D is enabled per panel
+        // right after creation, below.
     };
 
     st7123_vendor_config_t vendor_config = {
@@ -1455,6 +1468,8 @@ esp_err_t bsp_display_new_with_handles_to_st7123(const bsp_display_config_t* con
     ESP_GOTO_ON_ERROR(esp_lcd_panel_reset(disp_panel), err, TAG, "LCD panel reset failed");
     ESP_GOTO_ON_ERROR(esp_lcd_panel_init(disp_panel), err, TAG, "LCD panel init failed");
     ESP_GOTO_ON_ERROR(esp_lcd_panel_disp_on_off(disp_panel, true), err, TAG, "LCD panel display on failed");
+    // Equivalent of the old `.flags.use_dma2d = true`.
+    ESP_GOTO_ON_ERROR(esp_lcd_dpi_panel_enable_dma2d(disp_panel), err, TAG, "LCD panel DMA2D enable failed");
 
     /* Return all handles */
     ret_handles->io           = io;
@@ -1651,8 +1666,9 @@ static lv_indev_t* bsp_display_indev_init_to_st7123(lv_display_t* disp)
     };
     tp_io_config.scl_speed_hz = CONFIG_BSP_I2C_CLK_SPEED_HZ;
 
-    ret = esp_lcd_new_panel_io_i2c_v2(bsp_i2c_get_handle(), &tp_io_config, &tp_io_handle);
-    // ret = esp_lcd_new_panel_io_i2c(bsp_i2c_get_handle(), &tp_io_config, &tp_io_handle);
+    // IDF 6 folded the v1/v2 split into a single esp_lcd_new_panel_io_i2c()
+    // that always takes an i2c_master_bus_handle_t.
+    ret = esp_lcd_new_panel_io_i2c(bsp_i2c_get_handle(), &tp_io_config, &tp_io_handle);
     if (ret != ESP_OK) {
         ESP_LOGE(TAG, "Failed to create ST7123 touch I2C IO: %s", esp_err_to_name(ret));
         return NULL;

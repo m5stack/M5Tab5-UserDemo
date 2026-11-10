@@ -339,7 +339,13 @@ static esp_err_t isp_get_output_frame_type(cam_ctlr_color_t ctlr_color, isp_colo
         case CAM_CTLR_COLOR_YUV420:
             *isp_color = ISP_COLOR_YUV420;
             break;
-        case CAM_CTLR_COLOR_YUV422:
+        case CAM_CTLR_COLOR_YUV422_YVYU:
+        case CAM_CTLR_COLOR_YUV422_YUYV:
+        case CAM_CTLR_COLOR_YUV422_UYVY:
+        case CAM_CTLR_COLOR_YUV422_VYUY:
+            // IDF 6 replaced the single CAM_CTLR_COLOR_YUV422 with one enum per
+            // packing order, while the ISP side kept a single ISP_COLOR_YUV422
+            // (which means UYVY). Map every input variant onto it.
             *isp_color = ISP_COLOR_YUV422;
             break;
         default:

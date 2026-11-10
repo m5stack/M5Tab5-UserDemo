@@ -266,7 +266,7 @@ esp_err_t bsp_spiffs_unmount(void);
  *    - ESP_ERR_NO_MEM          If not enough memory or too many VFSes already registered
  *    - Others                  Fail
  */
-esp_err_t bsp_sdcard_init(char *mount_point, size_t max_files);
+esp_err_t bsp_sdcard_init(const char *mount_point, size_t max_files);
 
 /**
  * @brief Deinit SD card
@@ -276,7 +276,7 @@ esp_err_t bsp_sdcard_init(char *mount_point, size_t max_files);
  *    - ESP_OK: Success
  *    - Others: Fail
  */
-esp_err_t bsp_sdcard_deinit(char *mount_point);
+esp_err_t bsp_sdcard_deinit(const char *mount_point);
 
 /**************************************************************************************************
  *

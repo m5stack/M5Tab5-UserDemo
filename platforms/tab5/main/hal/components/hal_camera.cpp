@@ -85,7 +85,9 @@ typedef enum {
  *     - Device descriptor   Success
  *     - -1 error
  */
-int app_video_open(char* dev, example_fmt_t init_fmt)
+// Takes the device path and only ever passes it to open(), so it stays const.
+// The old `char *` forced callers to cast away const on a string literal.
+int app_video_open(const char* dev, example_fmt_t init_fmt)
 {
     struct v4l2_format default_format;
     struct v4l2_capability capability;

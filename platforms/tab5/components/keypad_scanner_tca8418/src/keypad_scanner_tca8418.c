@@ -308,7 +308,10 @@ const char key_value_map[81] = {
     ' ',  // TAB
     ' ',  // NONE
     ' ',  // NONE
-    '4', '￥', '/', 'g', 'o', 'w',
+    // Was the full-width yen sign, whose UTF-8 bytes formed a multi-character
+    // constant (GCC 15 rejects that under -Werror). '$' matches the same slot
+    // in key_value_map_str below.
+    '4', '$', '/', 'g', 'o', 'w',
     ' ',  // KANA
     ' ',  // STOP
     '<',  // <-

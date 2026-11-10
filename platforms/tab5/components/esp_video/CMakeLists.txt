@@ -9,7 +9,10 @@ set(srcs "src/esp_video_buffer.c"
 set(include_dirs "include")
 set(priv_include_dirs "private_include")
 set(priv_requires "vfs")
-set(requires "esp_driver_cam" "esp_driver_isp" "esp_cam_sensor" "esp_h264" "esp_driver_jpeg")
+# IDF 6 hollowed out the legacy `driver` component: it no longer re-exports the
+# esp_driver_* / esp_hal_* headers, so `#include "driver/gpio.h"` in
+# src/esp_video_init.c needs esp_driver_gpio named explicitly.
+set(requires "esp_driver_cam" "esp_driver_isp" "esp_driver_gpio" "esp_cam_sensor" "esp_h264" "esp_driver_jpeg")
 
 if(CONFIG_ESP_VIDEO_ENABLE_MIPI_CSI_VIDEO_DEVICE)
     list(APPEND srcs "src/device/esp_video_csi_device.c")
